@@ -21,6 +21,7 @@ import androidx.fragment.app.Fragment;
 import com.coolweather.android.db.City;
 import com.coolweather.android.db.County;
 import com.coolweather.android.db.Province;
+import com.coolweather.android.gson.Weather;
 import com.coolweather.android.util.HttpUtil;
 import com.coolweather.android.util.Utility;
 
@@ -85,8 +86,6 @@ public class ChooseAreaFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, 
                              @Nullable ViewGroup container, 
                              @Nullable Bundle savedInstanceState) {
-        Log.d("ChooseAreaFragment","进入onCreateView函数");
-
         View view = inflater.inflate(R.layout.choose_area, container, false);
         titleText = (TextView)view.findViewById(R.id.title_text);
         backButton = (Button)view.findViewById(R.id.back_button);
@@ -94,13 +93,11 @@ public class ChooseAreaFragment extends Fragment {
         adapter = new ArrayAdapter<>(getContext(), 
                 android.R.layout.simple_list_item_1, dataList);
         listView.setAdapter(adapter);
-        Log.d("ChooseAreaFragment","离开onCreateView函数");
         return view;
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        Log.d("ChooseAreaFragment","进入onActivityCreated函数");
 
         super.onActivityCreated(savedInstanceState);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
@@ -117,10 +114,20 @@ public class ChooseAreaFragment extends Fragment {
                 }
                 else if (currentLevel == LEVEL_COUNTY){
                     String weatherId = countyList.get(position).getWeatherId();
-                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
-                    intent.putExtra("weather_id", weatherId);
-                    startActivity(intent);
-                    getActivity().finish();
+                    Log.d("ChooseAreaFragment", getActivity().toString());
+                    if(getActivity() instanceof MainActivity){
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id", weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    }else if(getActivity() instanceof WeatherActivity){
+                        WeatherActivity activity = (WeatherActivity)getActivity();
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefresh.setRefreshing(true);
+                        activity.requestWeather(weatherId);
+                    }
+
+
                 }
             }
         });
@@ -137,7 +144,6 @@ public class ChooseAreaFragment extends Fragment {
             }
         });
         queryProvinces();
-        Log.d("ChooseAreaFragment","离开onActivityCreated函数");
 
     }
 
